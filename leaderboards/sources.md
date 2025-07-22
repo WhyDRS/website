@@ -19,6 +19,15 @@ Reported 14800000
 Outstanding ~81.3m (based on percentage calculation on provided data in the press release)
 Percentage 18.2%
 
+This update puts GNS at the #1 spot. I'm going to be including this with an asterisk drawing attention to it being a press release BUT I've noticed now that a 6k report was filed with the SEC commisurate with the press 
+release and that can be cited as well.  
+
+Original (7-17): https://www.sec.gov/Archives/edgar/data/1847806/000164117225020005/form6-k.htm
+
+Updated (7-22): https://www.sec.gov/Archives/edgar/data/1847806/000164117225020526/form6-k.htm
+
+The updated one refers to a lump of 50m shares with is sitting in escrow with vstock. I'm not counting those shares for the puposes of this page, but will make a note of that as well.
+
 ## Record Holder Leaderboard 
 
 Lists total number of record holders. Record holders must be reported annually in 10-K financial reports by all public companies. In order to populate this list initially, an intensive manua scraping process was done to gather companies with large amounts of record holders. 
