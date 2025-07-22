@@ -2,17 +2,22 @@ Page to track sourcing links and data used for the Leaderboards sections on WhyD
 
 ## DRS Leaderboard 
 
-Lists most recent DRS reporting figures from 10-Q and 10-K financial reports as a percent of outstanding shares. Currently we know of two companies reporting this information, but WhyDRS would love to encourage this kind of reporting from all public companies.
+Lists most recent DRS reporting figures from 10-Q and 10-K financial reports as a percent of outstanding shares. Currently we know of two companies reporting this information, but WhyDRS would love to encourage this kind of reporting from all public companies. On 7/17/2025, GNS issued a press release which included a DRS ownership statistic, the first time another company has done so. We're including this with the asterisk that it's under a press release rather than a financial filing.
 
-GME - 10Q for 2024 Q3, Dec 12 2024, https://www.sec.gov/Archives/edgar/data/1326380/000132638024000170/gme-20241102.htm
-Reported 71000000 
-Outstanding 446800365
-Percentage 15.89076589048892%
+GME - 10Q for 2025 Q1, Jun 5 2025, https://www.sec.gov/Archives/edgar/data/1326380/000132638025000035/gme-20250503.htm
+Reported 68100000
+Outstanding 447,336,306.
+Percentage 15.22344578041%
 
-AMC - 10Q for 2024 Q3, Nov 6 2024, https://www.sec.gov/Archives/edgar/data/1411579/000141157924000077/amc-20240930x10q.htm
-Reported 1700000
-Outstanding 375679699
-Percentage 0.45251313939111737
+AMC - 10Q for 2025 Q1, Mar 31 2025, https://www.sec.gov/Archives/edgar/data/1411579/000141157925000055/amc-20250331x10q.htm
+Reported - 1800000
+Outstanding - 433143561
+Percentage 0.41556660702616%
+
+GNS - Press Release, 7/17/2025, https://ir.geniusgroup.net/news-events/press-releases/detail/194/genius-group-provides-details-on-direct-registration-of
+Reported 14800000
+Outstanding ~81.3m (based on percentage calculation on provided data in the press release)
+Percentage 18.2%
 
 ## Record Holder Leaderboard 
 
