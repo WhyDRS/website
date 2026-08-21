@@ -1,0 +1,100 @@
+---
+import Layout from "../layouts/Layout.astro";
+import InteractiveTool from "../components/InteractiveTool.astro";
+import snapshot from "../../src/data/site.json";
+
+export function getStaticPaths() {
+  return snapshot.pages.map((page) => ({
+    params: { slug: page.path === "/" ? undefined : decodeURIComponent(page.path.slice(1)) },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const isHome = page.path === "/";
+const isSecurity = page.path.startsWith("/publicly-traded-u-s-securities/");
+const displayTitle = isHome ? "Own what you invest in." : page.title.replace(/\s*[|–]\s*WhyDRS$/i, "");
+const fallbackDescription = page.blocks.find((block) => block.type === "paragraph" && block.text.trim())?.text || "Explore this WhyDRS resource.";
+const securityValues = isSecurity ? page.blocks.filter((block) => block.type === "paragraph") : [];
+const security = isSecurity ? {
+  ticker: securityValues[0]?.text || page.description,
+  shares: securityValues[1]?.text || "Not available",
+  transferAgent: securityValues[2]?.text || "Not available",
+  issuer: securityValues[3]?.text || "Issuer not available",
+  cusip: securityValues[4]?.text || "Not available",
+  cik: securityValues[5]?.text || "Not available",
+  email: [...(securityValues[6]?.html || "").matchAll(/mailto:([^"']+)/g)].map((match) => match[1]).at(0) || "",
+} : null;
+const description = isSecurity ? `${security.issuer} (${security.ticker}) direct-registration reference information.` : page.description || fallbackDescription;
+const localize = (html) => html.replaceAll("https://www.whydrs.org", "");
+
+const content = page.blocks.filter((block, index) => {
+  if (block.type === "link") return false;
+  if (isSecurity && index < 18) return false;
+  if (!block.text?.replaceAll("​", "").trim() && !["image", "embed"].includes(block.type)) return false;
+  if (!isHome && index === 0 && block.type === "heading" && displayTitle.toLowerCase().includes(block.text.toLowerCase())) return false;
+  return true;
+});
+const actions = page.blocks.filter((block) => block.type === "link");
+const rendered = [];
+for (const block of content) {
+  if (block.type === "list-item") {
+    const previous = rendered.at(-1);
+    if (previous?.type === "list") previous.items.push(block);
+    else rendered.push({ type: "list", items: [block] });
+  } else rendered.push(block);
+}
+const hasTool = ["/contact", "/contact-brokers", "/contact-investor-relations", "/submit-sec-comment", "/drs-request-template", "/datanas"].includes(page.path);
+---
+
+<Layout title={page.title} description={description} path={page.path}>
+  <header class:list={["page-hero", { "home-hero": isHome }]}>
+    <div class="hero-inner">
+      <p class="eyebrow">{isHome ? "Investor education • Ownership • Transparency" : page.path.startsWith("/post/") ? "WhyDRS research" : "WhyDRS resource"}</p>
+      <h1>{displayTitle}</h1>
+      <p>{isHome ? "Direct registration puts shares in your name—giving you a direct relationship with the companies you invest in." : description}</p>
+      {isHome && <div class="hero-actions"><a class="button" href="/what-is-drs">Understand DRS</a><a class="button button-outline" href="/how-to-register-shares">Register shares</a></div>}
+    </div>
+  </header>
+
+  <div class="page-shell">
+    {hasTool && <InteractiveTool path={page.path} />}
+    {isSecurity && security && (
+      <section class="entity-card" aria-labelledby="security-details-title">
+        <p class="eyebrow">Security reference</p>
+        <h2 id="security-details-title">{security.issuer}</h2>
+        <dl class="entity-grid">
+          <div><dt>Ticker</dt><dd>{security.ticker}</dd></div>
+          <div><dt>Shares outstanding</dt><dd>{security.shares}</dd></div>
+          <div><dt>Transfer agent</dt><dd>{security.transferAgent}</dd></div>
+          <div><dt>CUSIP</dt><dd>{security.cusip}</dd></div>
+          <div><dt>SEC CIK</dt><dd>{security.cik}</dd></div>
+          <div><dt>Investor relations</dt><dd>{security.email ? <a href={`mailto:${security.email}`}>{security.email}</a> : "Not available"}</dd></div>
+        </dl>
+        <p class="data-note">This record is a snapshot of the public WhyDRS dataset. Verify current details before initiating a transfer.</p>
+      </section>
+    )}
+    {rendered.length > 0 && (
+      <article class:list={["content-flow", { "home-content": isHome }]}>
+        {rendered.map((block) => {
+          if (block.type === "heading") {
+            const Heading = `h${Math.min(Math.max(block.level + (block.level === 1 ? 1 : 0), 2), 4)}`;
+            return <Heading set:html={localize(block.html || block.text)} />;
+          }
+          if (block.type === "paragraph") return <p set:html={localize(block.html || block.text)} />;
+          if (block.type === "list") return <ul>{block.items.map((item) => <li set:html={localize(item.html || item.text)} />)}</ul>;
+          if (block.type === "image") return <figure><img src={block.src} alt={block.alt} loading="lazy" decoding="async" /></figure>;
+          if (block.type === "embed") return <div class="embed"><iframe src={block.src} title={block.title} loading="lazy"></iframe></div>;
+          return null;
+        })}
+      </article>
+    )}
+
+    {actions.length > 0 && (
+      <nav class="related-actions" aria-label="Related resources">
+        <p class="eyebrow">Continue exploring</p>
+        <div>{actions.map((action) => <a href={action.href.replace("https://www.whydrs.org", "")} class="action-link"><span>{action.label}</span><span aria-hidden="true">→</span></a>)}</div>
+      </nav>
+    )}
+  </div>
+</Layout>

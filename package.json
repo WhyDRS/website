@@ -1,13 +1,17 @@
 {
-  "devDependencies": {
-    "@wix/cli": "^1.0.0",
-    "@wix/eslint-plugin-cli": "^1.0.0",
-    "eslint": "^8.25.0",
-    "react": "16.14.0"
-  },
+  "name": "whydrs-standalone-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "postinstall": "wix sync-types",
-    "dev": "wix dev",
-    "lint": "eslint ."
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "import:site": "node scripts/import-wix.mjs",
+    "validate": "node scripts/validate-site.mjs"
+  },
+  "dependencies": {
+    "astro": "7.2.4",
+    "cheerio": "1.2.0"
   }
 }

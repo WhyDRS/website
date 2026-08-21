@@ -1,0 +1,154 @@
+---
+import snapshot from "../../src/data/site.json";
+
+const { path } = Astro.props;
+const brokers = snapshot.pages
+  .filter((page) => page.path.startsWith("/brokers/"))
+  .map((page) => ({ name: page.title.replace(/\s*\|\s*WhyDRS$/i, ""), path: page.path }));
+const securities = snapshot.pages
+  .filter((page) => page.path.startsWith("/publicly-traded-u-s-securities/"))
+  .map((page) => {
+    const values = page.blocks.filter((block) => block.type === "paragraph");
+    const email = values.flatMap((block) => [...block.html.matchAll(/mailto:([^"']+)/g)].map((match) => match[1])).at(0) || "";
+    return {
+      title: page.title,
+      ticker: values[0]?.text || page.description,
+      shares: values[1]?.text || "",
+      transferAgent: values[2]?.text || "",
+      issuer: values[3]?.text || "",
+      cusip: values[4]?.text || "",
+      email,
+      path: page.path,
+    };
+  });
+const toolData = JSON.stringify({ brokers, securities });
+---
+
+{path === "/contact" && (
+  <section class="tool-card" aria-labelledby="contact-tool-title">
+    <p class="eyebrow">Standalone contact</p>
+    <h2 id="contact-tool-title">Send feedback to WhyDRS</h2>
+    <form data-mail-form data-recipient="hi@whydrs.org">
+      <label>Subject <input name="subject" required placeholder="What would you like to discuss?" /></label>
+      <label>Message <textarea name="body" required rows="7" placeholder="Your message"></textarea></label>
+      <button class="button" type="submit">Open email client</button>
+    </form>
+  </section>
+)}
+
+{path === "/contact-brokers" && (
+  <section class="tool-card" aria-labelledby="broker-tool-title">
+    <p class="eyebrow">Advocacy letter builder</p>
+    <h2 id="broker-tool-title">Ask your broker to support DRS transfers</h2>
+    <form data-template-form data-kind="broker">
+      <label>Broker <input name="entity" list="broker-list" required placeholder="Search brokers" /></label>
+      <datalist id="broker-list">{brokers.map((broker) => <option value={broker.name} />)}</datalist>
+      <label>Your name <input name="name" required placeholder="Your name" /></label>
+      <label>Message <textarea name="message" rows="10"></textarea></label>
+      <div class="tool-actions"><button class="button" type="button" data-generate>Generate letter</button><button class="button button-outline" type="button" data-copy>Copy letter</button></div>
+    </form>
+  </section>
+)}
+
+{path === "/contact-investor-relations" && (
+  <section class="tool-card" aria-labelledby="ir-tool-title">
+    <p class="eyebrow">Investor relations letter builder</p>
+    <h2 id="ir-tool-title">Ask an issuer to disclose DRS ownership</h2>
+    <form data-template-form data-kind="issuer">
+      <label>Company or ticker <input name="entity" list="security-list" required placeholder="Search by ticker or company" /></label>
+      <datalist id="security-list">{securities.map((security) => <option value={`${security.ticker} — ${security.issuer}`} />)}</datalist>
+      <label>Your name <input name="name" required placeholder="Your name" /></label>
+      <label>Message <textarea name="message" rows="10"></textarea></label>
+      <div class="tool-actions"><button class="button" type="button" data-generate>Generate letter</button><button class="button button-outline" type="button" data-copy>Copy letter</button><button class="button button-outline" type="button" data-email>Email investor relations</button></div>
+    </form>
+  </section>
+)}
+
+{path === "/submit-sec-comment" && (
+  <section class="tool-card" aria-labelledby="sec-tool-title">
+    <p class="eyebrow">Public comment builder</p>
+    <h2 id="sec-tool-title">Draft a personal SEC comment</h2>
+    <form data-template-form data-kind="sec">
+      <label>File number or proposal <input name="entity" required placeholder="Example: S7-00-26" /></label>
+      <label>Your name <input name="name" required placeholder="Your name" /></label>
+      <label>Your reasons <textarea name="reasons" rows="5" placeholder="Explain the impact in your own words"></textarea></label>
+      <label>Message <textarea name="message" rows="12"></textarea></label>
+      <div class="tool-actions"><button class="button" type="button" data-generate>Generate draft</button><button class="button button-outline" type="button" data-copy>Copy draft</button></div>
+      <p class="form-note">Review the proposal’s official SEC page for its current submission method and deadline before sending.</p>
+    </form>
+  </section>
+)}
+
+{path === "/drs-request-template" && (
+  <section class="tool-card" aria-labelledby="drs-tool-title">
+    <p class="eyebrow">DRS request builder</p>
+    <h2 id="drs-tool-title">Prepare a direct-registration request</h2>
+    <p>Select a security to fill its issuer, CUSIP, and transfer-agent details from the archived WhyDRS dataset.</p>
+    <form data-template-form data-kind="drs">
+      <label>Company or ticker <input name="entity" list="security-list" required placeholder="Search by ticker or company" /></label>
+      <datalist id="security-list">{securities.map((security) => <option value={`${security.ticker} — ${security.issuer}`} />)}</datalist>
+      <label>Number of shares <input name="shares" type="number" min="1" required /></label>
+      <label>Your name <input name="name" required placeholder="Full legal name" /></label>
+      <label>Request <textarea name="message" rows="12"></textarea></label>
+      <div class="tool-actions"><button class="button" type="button" data-generate>Generate request</button><button class="button button-outline" type="button" data-copy>Copy request</button><button class="button button-outline" type="button" data-print>Print</button></div>
+    </form>
+  </section>
+)}
+
+{path === "/datanas" && (
+  <section class="tool-card" aria-labelledby="database-tool-title">
+    <p class="eyebrow">Legacy route preserved</p>
+    <h2 id="database-tool-title">The database has moved</h2>
+    <p>The original Wix Table Master embed is blank on the live site. The maintained, open-source database now provides search, filters, and exports on its standalone host.</p>
+    <a class="button" href="https://database.whydrs.org/full-database">Open the full WhyDRS database</a>
+  </section>
+)}
+
+<script type="application/json" id="tool-data" set:html={toolData} />
+<script>
+  const data = JSON.parse(document.querySelector("#tool-data")?.textContent || "{}");
+  const findSecurity = (query) => {
+    const ticker = query.split("—")[0].trim().toLowerCase();
+    return data.securities?.find((item) => item.ticker.toLowerCase() === ticker || `${item.ticker} — ${item.issuer}`.toLowerCase() === query.toLowerCase());
+  };
+
+  document.querySelector("[data-mail-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    location.href = `mailto:${form.dataset.recipient}?subject=${encodeURIComponent(fields.get("subject"))}&body=${encodeURIComponent(fields.get("body"))}`;
+  });
+
+  document.querySelectorAll("[data-template-form]").forEach((form) => {
+    const message = form.querySelector('[name="message"]');
+    form.querySelector("[data-generate]")?.addEventListener("click", () => {
+      const fields = new FormData(form);
+      const name = fields.get("name")?.trim() || "Investor";
+      const entity = fields.get("entity")?.trim() || "";
+      const kind = form.dataset.kind;
+      if (kind === "broker") message.value = `To ${entity},\n\nI am writing to ask that you support simple, timely, and fee-free Direct Registration System transfers for your customers. Direct registration lets investors hold shares on the issuer's records in their own names. Please confirm your current DRS transfer policy, fees, and instructions, and consider removing barriers to this service.\n\nSincerely,\n${name}`;
+      if (kind === "issuer") {
+        const security = findSecurity(entity);
+        const issuer = security?.issuer || entity;
+        message.value = `To the Investor Relations team at ${issuer},\n\nAs an investor, I ask that the company disclose the number of directly registered shares and record holders in its periodic reports. This information helps investors understand the company's ownership base and supports transparent shareholder engagement.\n\nThank you for considering this request.\n\nSincerely,\n${name}`;
+      }
+      if (kind === "sec") message.value = `Re: ${entity}\n\nDear Securities and Exchange Commission,\n\nI am submitting this comment in my personal capacity. ${fields.get("reasons")?.trim() || "I encourage the Commission to consider how this proposal affects household investors, market transparency, and fair access."}\n\nThank you for considering my perspective and including it in the public record.\n\nSincerely,\n${name}`;
+      if (kind === "drs") {
+        const security = findSecurity(entity);
+        message.value = `To whom it may concern,\n\nPlease initiate a Direct Registration System transfer of ${fields.get("shares")} share(s) of ${security?.issuer || entity} (${security?.ticker || "ticker not found"}; CUSIP ${security?.cusip || "not available"}) from my brokerage account to the issuer's transfer agent, ${security?.transferAgent || "the issuer's appointed transfer agent"}.\n\nPlease use my full legal registration details on file and confirm when the transfer has been submitted.\n\nSincerely,\n${name}`;
+      }
+    });
+    form.querySelector("[data-copy]")?.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(message.value);
+      const button = form.querySelector("[data-copy]");
+      button.textContent = "Copied";
+      window.setTimeout(() => button.textContent = "Copy letter", 1600);
+    });
+    form.querySelector("[data-email]")?.addEventListener("click", () => {
+      const security = findSecurity(new FormData(form).get("entity")?.trim() || "");
+      if (!security?.email) return alert("No investor-relations email is available in the archived record. Open the company page to verify current contact information.");
+      location.href = `mailto:${security.email}?subject=${encodeURIComponent("Request for DRS ownership disclosure")}&body=${encodeURIComponent(message.value)}`;
+    });
+    form.querySelector("[data-print]")?.addEventListener("click", () => window.print());
+  });
+</script>

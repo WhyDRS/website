@@ -1,0 +1,6 @@
+.git
+.astro
+dist
+node_modules
+src/pages
+src/backend

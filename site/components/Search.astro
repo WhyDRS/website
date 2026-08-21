@@ -1,0 +1,56 @@
+---
+const { pages } = Astro.props;
+const index = pages.map((page) => ({
+  path: page.path,
+  title: page.title.replace(/\s*[|–-]\s*WhyDRS$/i, ""),
+  description: page.description || page.blocks.find((block) => block.text)?.text || "",
+}));
+---
+
+<dialog class="search-dialog" data-search-dialog>
+  <div class="search-panel">
+    <div class="search-heading">
+      <div>
+        <p class="eyebrow">Site search</p>
+        <h2>Search all {pages.length} pages</h2>
+      </div>
+      <button type="button" class="dialog-close" data-close-search aria-label="Close search">×</button>
+    </div>
+    <label for="site-search">Search by topic, company, ticker, broker, or transfer agent</label>
+    <input id="site-search" type="search" placeholder="Try “Computershare” or “voting rights”" autocomplete="off" />
+    <p class="search-count" aria-live="polite">Start typing to search.</p>
+    <div class="search-results"></div>
+  </div>
+</dialog>
+<script type="application/json" id="search-index" set:html={JSON.stringify(index)} />
+<script>
+  const dialog = document.querySelector("[data-search-dialog]");
+  const input = document.querySelector("#site-search");
+  const results = document.querySelector(".search-results");
+  const count = document.querySelector(".search-count");
+  const index = JSON.parse(document.querySelector("#search-index")?.textContent || "[]");
+
+  document.querySelector("[data-open-search]")?.addEventListener("click", () => {
+    dialog?.showModal();
+    window.setTimeout(() => input?.focus(), 0);
+  });
+  document.querySelector("[data-close-search]")?.addEventListener("click", () => dialog?.close());
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  input?.addEventListener("input", () => {
+    const query = input.value.trim().toLowerCase();
+    if (!query) {
+      results.innerHTML = "";
+      count.textContent = "Start typing to search.";
+      return;
+    }
+    const matches = index.filter((item) => `${item.title} ${item.description} ${item.path}`.toLowerCase().includes(query)).slice(0, 30);
+    count.textContent = `${matches.length}${matches.length === 30 ? "+" : ""} result${matches.length === 1 ? "" : "s"}`;
+    results.innerHTML = matches.map((item) => `<a href="${item.path}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.description.slice(0, 180))}</span></a>`).join("");
+  });
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
+  }
+</script>

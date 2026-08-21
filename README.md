@@ -1,45 +1,69 @@
-# Git Integration & Wix CLI <img align="left" src="https://user-images.githubusercontent.com/89579857/185785022-cab37bf5-26be-4f11-85f0-1fac63c07d3b.png">
+# WhyDRS standalone site
 
-This repo is part of Git Integration & Wix CLI, a set of tools that allows you to write, test, and publish code for your Wix site locally on your computer. 
+This branch is a complete static migration of the public WhyDRS website away from Wix. It preserves the live route structure, snapshots page content, hosts media and downloads locally, and can be deployed to any static host or container platform.
 
-Connect your site to GitHub, develop in your favorite IDE, test your code in real time, and publish your site from the command line.
+## Migration coverage
 
-## Set up this repository in your IDE
-This repo is connected to a Wix site. That site tracks this repo's default branch. Any code committed and pushed to that branch from your local IDE appears on the site.
+- 425 routes declared by Wix sitemaps
+- 1 additional live page discovered through internal links
+- 104 locally hosted images
+- 17 locally hosted downloadable documents
+- Search across every migrated route
+- Native replacements for the contact, broker advocacy, investor-relations, SEC-comment, and DRS-request workflows
+- A local placeholder for three third-party profile images whose original URLs are already dead
+- No Wix runtime, API, package, media, or rendering dependency in the generated site
 
-Before getting started, make sure you have the following things installed:
-* [Git](https://git-scm.com/download)
-* [Node](https://nodejs.org/en/download/), version 14.8 or later.
-* [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [yarn](https://yarnpkg.com/getting-started/install)
-* An SSH key [added to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+The detailed source-to-output record is in `migration-manifest.json`. The legacy Velo export remains under `src/pages` for reference and is not part of the Astro build.
 
-To set up your local environment and start coding locally, do the following:
+## Local development
 
-1. Open your terminal and navigate to where you want to store the repo.
-1. Clone the repo by running `git clone <your-repository-url>`.
-1. Navigate to the repo's directory by running `cd <directory-name>`.
-1. Install the repo's dependencies by running `npm install` or `yarn install`.
-1. Install the Wix CLI by running `npm install -g @wix/cli` or `yarn global add @wix/cli`.  
-   Once you've installed the CLI globally, you can use it with any Wix site's repo.
+```sh
+npm install
+npm run dev
+```
 
-For more information, see [Setting up Git Integration & Wix CLI](https://support.wix.com/en/article/velo-setting-up-git-integration-wix-cli-beta).
+The development server prints its local URL. The production workflow is:
 
-## Write Velo code in your IDE
-Once your repo is set up, you can write code in it as you would in any other non-Wix project. The repo's file structure matches the [public](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#public), [backend](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#backend), and [page code](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#page-code) sections in Editor X.
+```sh
+npm run build
+npm run validate
+npm run preview
+```
 
-Learn more about [this repo's file structure](https://support.wix.com/en/article/velo-understanding-your-sites-github-repository-beta).
+The deployable site is written to `dist`.
 
-## Test your code with the Local Editor
-The Local Editor allows you test changes made to your site in real time. The code in your local IDE is synced with the Local Editor, so you can test your changes before committing them to your repo. You can also change the site design in the Local Editor and sync it with your IDE.
+## Refresh from the live Wix site
 
-Start the Local Editor by navigating to this repo's directory in your terminal and running `wix dev`.
+Run this immediately before the final cutover so the snapshot includes last-minute content updates:
 
-For more information, see [Working with the Local Editor](https://support.wix.com/en/article/velo-working-with-the-local-editor-beta).
+```sh
+npm run import:site
+npm run build
+npm run validate
+```
 
-## Preview and publish with the Wix CLI
-The Wix CLI is a tool that allows you to work with your site locally from your computer's terminal. You can use it to build a preview version of your site and publish it. You can also use the CLI to install [approved npm packages](https://support.wix.com/en/article/velo-working-with-npm-packages) to your site.
+The importer reads every sitemap, follows additional internal page links, downloads remote page media and documents, decodes protected contact addresses, records unavailable assets, and regenerates both `src/data/site.json` and `migration-manifest.json`.
 
-Learn more about [working with the Wix CLI](https://support.wix.com/en/article/velo-working-with-the-wix-cli-beta).
+## Hosting
 
-## Invite contributors to work with you
-Git Integration & Wix CLI extends Editor X's [concurrent editing](https://support.wix.com/en/article/editor-x-about-concurrent-editing) capabilities. Invite other developers as collaborators on your [site](https://support.wix.com/en/article/inviting-people-to-contribute-to-your-site) and your [GitHub repo](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-access-to-your-personal-repositories/inviting-collaborators-to-a-personal-repository). Multiple developers can work on a site's code at once.
+Any static host can publish `dist`. Build with `npm run build`; no server-side adapter or environment variable is required.
+
+For a standalone container:
+
+```sh
+docker build -t whydrs-site .
+docker run --rm -p 8080:8080 whydrs-site
+```
+
+The included Nginx configuration serves extensionless legacy routes, a custom 404 page, and long-lived cache headers for versioned static assets.
+
+## Cutover checklist
+
+1. Run the refresh, build, and validation commands above.
+2. Review the generated site on a preview host at desktop and mobile widths.
+3. Verify the email-client and clipboard workflows in a real browser.
+4. Point both the apex domain and `www` record at the new host.
+5. Confirm HTTPS, the canonical hostname, `robots.txt`, `sitemap.xml`, and representative legacy URLs.
+6. Keep Wix available but disconnected during a short rollback window, then cancel it only after production monitoring is clean.
+
+The external WhyDRS database remains an intentional separate service. The main site itself does not require Wix or a backend.

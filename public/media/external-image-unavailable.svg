@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title description">
+  <title id="title">Archived image unavailable</title>
+  <desc id="description">The image linked by the original site is no longer available from its source.</desc>
+  <rect width="800" height="480" fill="#eef6f1"/>
+  <circle cx="400" cy="200" r="72" fill="#2e732e" opacity=".14"/>
+  <path d="M352 212l36-40 28 31 18-20 42 47H352z" fill="#2e732e" opacity=".7"/>
+  <text x="400" y="320" text-anchor="middle" fill="#173a17" font-family="Arial, sans-serif" font-size="26">Archived image unavailable</text>
+</svg>

@@ -1,0 +1,99 @@
+---
+import Search from "../components/Search.astro";
+import snapshot from "../../src/data/site.json";
+
+const {
+  title = "WhyDRS",
+  description = "Free educational resources about the Direct Registration System.",
+  path = "/",
+} = Astro.props;
+const canonical = new URL(path, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#144f9b" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="community-bar">
+      <a href="https://mee6.xyz/i/pvWfXwWnsp" rel="noopener noreferrer">Join the DRS Discord <span aria-hidden="true">↗</span></a>
+    </div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="WhyDRS home">
+          <span class="brand-mark" aria-hidden="true">W</span>
+          <span>WhyDRS</span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+          <a href="/what-is-drs">What is DRS</a>
+          <a href="/why-register-shares">Why register</a>
+          <a href="/how-to-register-shares">How to register</a>
+          <a href="/advocacy">Advocacy</a>
+          <a href="/database">Database</a>
+          <a href="/learn-more">Learn more</a>
+          <a href="/about">About</a>
+        </nav>
+        <button class="search-toggle" type="button" data-open-search aria-label="Search all WhyDRS pages">Search</button>
+      </div>
+    </header>
+    <main id="main-content">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div>
+          <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">W</span><span>WhyDRS</span></a>
+          <p>Not your name, not your shares.</p>
+        </div>
+        <div>
+          <h2>Explore</h2>
+          <a href="/research-and-resources">Research and resources</a>
+          <a href="/free-resources">Free advocacy resources</a>
+          <a href="/glossary-of-terms">Glossary</a>
+          <a href="/privacy-policy">Privacy</a>
+        </div>
+        <div>
+          <h2>Connect</h2>
+          <a href="mailto:hi@whydrs.org">hi@whydrs.org</a>
+          <a href="https://github.com/WhyDRS" rel="noopener noreferrer">GitHub</a>
+          <a href="https://lemmy.whynotdrs.org" rel="noopener noreferrer">WhyNotDRS</a>
+          <a href="https://www.tiktok.com/@whydrsorg" rel="noopener noreferrer">@whydrsorg</a>
+        </div>
+        <div>
+          <h2>Support the work</h2>
+          <p>WhyDRS is a 501(c)(3) public charity and DUNA powered by volunteers.</p>
+          <a class="button button-light" href="https://www.every.org/whydrs" rel="noopener noreferrer">Donate</a>
+        </div>
+      </div>
+      <div class="legal">
+        <p>WhyDRS does not give financial advice. Each investor is responsible for their own decisions.</p>
+        <p>This site is not affiliated with any companies or transfer agents. It provides educational and reference information about U.S. financial markets, publicly traded companies, and the Direct Registration System.</p>
+        <p>© {new Date().getFullYear()} WhyDRS.</p>
+      </div>
+    </footer>
+    <Search pages={snapshot.pages} />
+    <script>
+      const toggle = document.querySelector(".menu-toggle");
+      const nav = document.querySelector("#site-nav");
+      toggle?.addEventListener("click", () => {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        nav?.toggleAttribute("data-open", open);
+      });
+    </script>
+  </body>
+</html>
